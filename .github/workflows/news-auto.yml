@@ -1,0 +1,39 @@
+name: Auto Update ScanX News Widget
+
+on:
+  schedule:
+    # Every hour at a random minute 0-59 (here multiple to randomize further)
+    - cron: '18 * * * *'
+    - cron: '37 * * * *'
+    - cron: '53 * * * *'
+    # (Har hafte har 1-2 ghanta random slot pe call hoga)
+  workflow_dispatch:
+
+jobs:
+  auto-news:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install requirements
+        run: pip install requests
+      - name: Random sleep before run (to desync from other jobs)
+        run: |
+          import random, time
+          wait = random.randint(0, 3300) # up to ~55min
+          print(f"Sleeping for {wait} seconds randomly before script...")
+          time.sleep(wait)
+        shell: python
+      - name: Run ScanX News Script
+        env:
+          SCANX_AUTH_TOKEN: ${{ secrets.SCANX_AUTH_TOKEN }}
+          SCANX_AUTHORIZATION_TOKEN: ${{ secrets.SCANX_AUTHORIZATION_TOKEN }}
+          WP_SITE_URL: ${{ secrets.WP_SITE_URL }}
+          WP_POST_ID: ${{ secrets.WP_POST_ID }}
+          WP_USERNAME: ${{ secrets.WP_USERNAME }}
+          WP_APPLICATION_PASSWORD: ${{ secrets.WP_APPLICATION_PASSWORD }}
+        run: python news_fetcher.py
+
